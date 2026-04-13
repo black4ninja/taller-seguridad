@@ -1,0 +1,10 @@
+<%- include('partials/header') %>
+<h1>&gt; login_</h1>
+<% if (error) { %><div class="error"><%= error %></div><% } %>
+<form method="POST" action="/auth/login">
+  <input type="text" name="username" placeholder="username" autocomplete="off" required>
+  <input type="password" name="password" placeholder="password" required>
+  <button type="submit">Acceder</button>
+</form>
+<p><small>cuentas de prueba: neo/matrix · trinity/zion · admin/admin123</small></p>
+<%- include('partials/footer') %>

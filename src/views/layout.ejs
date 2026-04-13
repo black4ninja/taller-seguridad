@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title><%= typeof title !== 'undefined' ? title : 'Hack the Campus' %></title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <pre class="banner">
+ _   _            _      _   _            _____
+| | | | __ _  ___| | __ | |_| |__   ___  / ___|__ _ _ __ ___  _ __  _   _
+| |_| |/ _` |/ __| |/ / | __| '_ \ / _ \| |   / _` | '_ ` _ \| '_ \| | | |
+|  _  | (_| | (__|   <  | |_| | | |  __/| |__| (_| | | | | | | |_) | |_| |
+|_| |_|\__,_|\___|_|\_\  \__|_| |_|\___(_)____\__,_|_| |_| |_| .__/ \__,_|
+                                                             |_|
+    </pre>
+    <nav>
+      <a href="/">[home]</a>
+      <a href="/forum">[forum]</a>
+      <a href="/files">[evidence]</a>
+      <% if (user) { %>
+        <% if (user.role === 'admin') { %><a href="/admin/users">[admin]</a><% } %>
+        <span class="user">logged in as <%= user.username %> (<%= user.role %>)</span>
+        <a href="/auth/logout">[logout]</a>
+      <% } else { %>
+        <a href="/auth/login">[login]</a>
+      <% } %>
+    </nav>
+  </header>
+  <main>
+    <%- body %>
+  </main>
+  <footer>
+    <p>&copy; Club de Ciberseguridad - Hack the Campus CTF 2026</p>
+  </footer>
+</body>
+</html>

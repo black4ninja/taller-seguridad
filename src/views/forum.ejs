@@ -1,0 +1,32 @@
+<%- include('partials/header') %>
+<h1>&gt; forum_</h1>
+<form method="GET" action="/forum/search">
+  <input type="text" name="q" value="<%= query %>" placeholder="buscar en posts...">
+  <button type="submit">search</button>
+</form>
+<% if (results !== null) { %>
+  <h2>Resultados para "<%= query %>"</h2>
+  <% results.forEach(p => { %>
+    <div class="post">
+      <strong><%= p.title %></strong> <small>por <%= p.author %></small>
+      <p><%= p.body %></p>
+    </div>
+  <% }) %>
+  <hr>
+<% } %>
+<h2>Últimos posts</h2>
+<% posts.forEach(p => { %>
+  <div class="post">
+    <strong><%= p.title %></strong> <small>por <%= p.author %> · <%= p.created_at %></small>
+    <p><%= p.body %></p>
+  </div>
+<% }) %>
+<% if (user) { %>
+  <h2>Nuevo post</h2>
+  <form method="POST" action="/forum">
+    <input type="text" name="title" placeholder="título" required>
+    <textarea name="body" placeholder="mensaje..." rows="3" required></textarea>
+    <button type="submit">publicar</button>
+  </form>
+<% } %>
+<%- include('partials/footer') %>

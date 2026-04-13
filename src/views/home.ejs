@@ -1,0 +1,7 @@
+<%- include('partials/header') %>
+<h1>&gt; welcome_</h1>
+<p>Has encontrado el portal interno del Club de Ciberseguridad del campus.</p>
+<p>Tu misión, si decides aceptarla: <strong>identifica y remedia las 6 vulnerabilidades</strong> clasificadas bajo STRIDE.</p>
+<p>Corre <code>npm test</code> para ver tu progreso. Corre <code>npm run scan:semgrep</code> y <code>npm run scan:zap</code> para escanear la app.</p>
+<% if (!user) { %><p><a href="/auth/login">[acceder al sistema]</a></p><% } %>
+<%- include('partials/footer') %>

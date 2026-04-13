@@ -1,0 +1,22 @@
+<%- include('partials/header') %>
+<h1>&gt; admin_panel_</h1>
+<p>Gestión de usuarios del club.</p>
+<table>
+  <tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Acción</th></tr>
+  <% users.forEach(u => { %>
+    <tr>
+      <td><%= u.id %></td>
+      <td><%= u.username %></td>
+      <td><%= u.email %></td>
+      <td><%= u.role %></td>
+      <td>
+        <% if (u.role !== 'admin') { %>
+          <form method="POST" action="/admin/users/<%= u.id %>/promote" style="margin:0">
+            <button type="submit">promote</button>
+          </form>
+        <% } %>
+      </td>
+    </tr>
+  <% }) %>
+</table>
+<%- include('partials/footer') %>
