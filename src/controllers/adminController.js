@@ -1,24 +1,18 @@
 const userRepo = require('../repositories/userRepo');
+const { logAction } = require('../middlewares/audit');
 
-// VULN V6: estos handlers NO verifican `req.session.user.role === 'admin'`.
-// El menú de admin está oculto en el frontend para usuarios normales,
-// pero un curl directo a /admin/users pasa sin problema.
-// Además, V3: no se audita quién cambió el rol ni cuándo.
+// Fix V6: rbac lo maneja requireAdmin en el router.
+// Fix V3: se audita cada promoción.
 
 function listUsers(req, res) {
-  if (!req.session.user) {
-    return res.status(401).render('error', { message: 'Login requerido' });
-  }
   const users = userRepo.listAll();
   res.render('admin', { users });
 }
 
 function promoteUser(req, res) {
-  if (!req.session.user) {
-    return res.status(401).render('error', { message: 'Login requerido' });
-  }
   const { id } = req.params;
   userRepo.updateRole(id, 'admin');
+  logAction(req.session.user.username, 'promote:role', `user:${id}`);
   res.redirect('/admin/users');
 }
 

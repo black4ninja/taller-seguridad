@@ -4,13 +4,12 @@ function listPosts() {
   return getDb().prepare('SELECT * FROM posts ORDER BY id DESC').all();
 }
 
-// VULN V2 (Tampering - SQL Injection):
-// Concatenación directa del input en la query.
-// Payload: q=' OR '1'='1  devuelve todos los posts.
-// Payload: q=' UNION SELECT id,username,password,role,email FROM users--
+// Fix V2: prepared statement con parámetros.
 function searchPosts(q) {
-  const sql = `SELECT * FROM posts WHERE title LIKE '%${q}%' OR body LIKE '%${q}%'`;
-  return getDb().prepare(sql).all();
+  const pattern = `%${q}%`;
+  return getDb()
+    .prepare('SELECT * FROM posts WHERE title LIKE ? OR body LIKE ?')
+    .all(pattern, pattern);
 }
 
 function createPost(author, title, body) {

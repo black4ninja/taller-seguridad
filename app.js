@@ -21,15 +21,15 @@ function createApp() {
   app.use(express.json());
   app.use(express.static(path.join(__dirname, 'src', 'public')));
 
-  // VULN V1 (parcial): cookies sin flags de seguridad + secreto hardcodeado débil.
+  // Fix V1: cookies httpOnly + sameSite strict, secreto desde env.
   app.use(session({
-    secret: 'admin123',
+    secret: process.env.SESSION_SECRET || require('crypto').randomBytes(32).toString('hex'),
     resave: false,
     saveUninitialized: false,
     cookie: {
-      httpOnly: false,
-      secure: false,
-      sameSite: false,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
       maxAge: 1000 * 60 * 60
     }
   }));
@@ -46,12 +46,11 @@ function createApp() {
   app.use('/admin', adminRoutes);
   app.use('/status', statusRoutes);
 
-  // VULN V4 (parcial): error handler expone stack trace al cliente.
+  // Fix V4 (parte): error handler genérico sin stack al cliente.
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
-    res.status(500).type('text/plain').send(
-      `ERROR: ${err.message}\n\nSTACK:\n${err.stack}`
-    );
+    console.error('[error]', err.message, err.stack);
+    res.status(err.status || 500).type('text/plain').send('Internal server error');
   });
 
   return app;

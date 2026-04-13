@@ -20,13 +20,17 @@ function doUpload(req, res) {
   res.redirect('/files');
 }
 
-// VULN V4 (Information Disclosure - Path Traversal):
-// El parámetro `name` se concatena directamente al UPLOAD_DIR sin validación.
-// Payload: GET /files/download?name=../../package.json  -> filtra archivos del repo.
-// Payload: GET /files/download?name=../../../../../etc/passwd (en Linux).
+// Fix V4: valida que el nombre sea un basename simple y que el path resuelto
+// siga dentro de UPLOAD_DIR.
 function download(req, res) {
   const name = req.query.name || '';
-  const filePath = path.join(UPLOAD_DIR, name);
+  if (!name || name !== path.basename(name) || name.includes('\0')) {
+    return res.status(400).type('text/plain').send('Nombre inválido');
+  }
+  const filePath = path.resolve(UPLOAD_DIR, name);
+  if (!filePath.startsWith(path.resolve(UPLOAD_DIR) + path.sep)) {
+    return res.status(400).type('text/plain').send('Ruta inválida');
+  }
   if (!fs.existsSync(filePath)) {
     return res.status(404).type('text/plain').send('No encontrado');
   }
