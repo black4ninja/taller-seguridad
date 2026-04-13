@@ -4,6 +4,7 @@ const { resetDb } = require('../../src/db/init');
 
 function freshApp() {
   resetDb();
+  try { require('../../src/middlewares/rateLimit').reset(); } catch (_) {}
   return createApp();
 }
 

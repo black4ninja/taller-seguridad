@@ -31,11 +31,14 @@ describe('V0 - Integridad de la suite de tests', () => {
   });
 
   test('ningún test contiene .skip o .only (evita saltarse checks)', () => {
+    // Patrones construidos dinámicamente para que este test no se autodetecte.
+    const dot = String.fromCharCode(46);
+    const skipRe = new RegExp(`\\b(describe|test|it)${dot}(skip|only)\\b`);
+    const xRe = new RegExp(`\\b(x${'describe'}|x${'test'}|x${'it'})\\b`);
     for (const f of LOCKED) {
       const content = fs.readFileSync(path.join(TESTS_DIR, f), 'utf8');
-      expect(content).not.toMatch(/\b(describe|test|it)\.skip\b/);
-      expect(content).not.toMatch(/\b(describe|test|it)\.only\b/);
-      expect(content).not.toMatch(/xdescribe|xtest|xit/);
+      expect(skipRe.test(content)).toBe(false);
+      expect(xRe.test(content)).toBe(false);
     }
   });
 
