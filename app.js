@@ -8,6 +8,7 @@ const forumRoutes = require('./src/routes/forum');
 const fileRoutes = require('./src/routes/files');
 const adminRoutes = require('./src/routes/admin');
 const indexRoutes = require('./src/routes/index');
+const statusRoutes = require('./src/routes/status');
 
 function createApp() {
   const app = express();
@@ -43,6 +44,7 @@ function createApp() {
   app.use('/forum', forumRoutes);
   app.use('/files', fileRoutes);
   app.use('/admin', adminRoutes);
+  app.use('/status', statusRoutes);
 
   // VULN V4 (parcial): error handler expone stack trace al cliente.
   // eslint-disable-next-line no-unused-vars

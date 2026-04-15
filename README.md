@@ -14,6 +14,10 @@
 5. **No edites los archivos en `tests/security/`** — hay un test meta que detecta modificaciones.
 6. Entregable paralelo: llenar `docs/STRIDE.md` con el mapeo vuln → letra STRIDE → control NIST 800-53 → commit que la arregló.
 
+## Si es tu primera vez: empieza por V0
+
+Antes de atacar V1..V6, lee [`docs/WALKTHROUGH.md`](docs/WALKTHROUGH.md). Es una **vuln extra (V0) resuelta paso a paso** que te muestra el loop completo: detectar → clasificar con STRIDE → mapear a NIST → implementar fix → validar → documentar. Los 8 pasos de V0 son los mismos que vas a repetir para las 6 vulns del reto.
+
 ## Setup (minuto 0-10)
 
 ```bash
@@ -49,12 +53,13 @@ npm run scan:semgrep    # código (requiere Docker)
 npm run scan:zap        # app corriendo (requiere Docker + npm start en otra terminal)
 ```
 
-## Las 6 vulnerabilidades (STRIDE)
+## Las vulnerabilidades
 
 Cada letra de STRIDE tiene **una** vulnerabilidad plantada. Los tests son la especificación del fix.
 
 | Test | STRIDE | Hint |
 |---|---|---|
+| `V0_walkthrough.test.js` | **T**ampering (XSS) | ruta `/status` · **ejemplo resuelto en [`docs/WALKTHROUGH.md`](docs/WALKTHROUGH.md)** |
 | `V1_spoofing.test.js` | **S**poofing | login, cookies, rate limit |
 | `V2_tampering.test.js` | **T**ampering | búsqueda del foro |
 | `V3_repudiation.test.js` | **R**epudiation | tabla `audit` |
@@ -62,8 +67,11 @@ Cada letra de STRIDE tiene **una** vulnerabilidad plantada. Los tests son la esp
 | `V5_dos.test.js` | **D**enial of Service | upload + validador de email |
 | `V6_elevation.test.js` | **E**levation of Privilege | rutas `/admin` |
 
+V0 cuenta igual que las otras para tener los tests en verde, pero viene con guía completa — úsala para calibrar.
+
 ## Docs
 
+- [`docs/WALKTHROUGH.md`](docs/WALKTHROUGH.md) — **V0 resuelta paso a paso** (empieza aquí).
 - [`docs/DFD.md`](docs/DFD.md) — Diagrama de flujo de datos con límites de confianza.
 - [`docs/STRIDE.md`](docs/STRIDE.md) — **Plantilla a llenar** (entregable paralelo).
 - [`docs/GUIA_HERRAMIENTAS.md`](docs/GUIA_HERRAMIENTAS.md) — Comandos de ZAP/Semgrep/npm audit.
