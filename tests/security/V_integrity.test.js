@@ -7,6 +7,7 @@ const crypto = require('crypto');
 describe('V0 - Integridad de la suite de tests', () => {
   const TESTS_DIR = __dirname;
   const LOCKED = [
+    'V0_walkthrough.test.js',
     'V1_spoofing.test.js',
     'V2_tampering.test.js',
     'V3_repudiation.test.js',
@@ -15,10 +16,16 @@ describe('V0 - Integridad de la suite de tests', () => {
     'V6_elevation.test.js'
   ];
 
-  // Hashes calculados sobre los archivos originales (SHA-256).
-  // Si necesitas regenerar: node -e "console.log(require('crypto').createHash('sha256').update(require('fs').readFileSync('tests/security/V1_spoofing.test.js')).digest('hex'))"
+  // Hashes SHA-256 generados por `node scripts/lock-tests.js`.
+  // Si EXPECTED tiene entradas, el test exige match exacto (modo estricto).
   const EXPECTED = {
-    // Los hashes reales se llenan con scripts/lock-tests.js
+    'V0_walkthrough.test.js': '5a7da573c6ebd78c24739ad451bc4517e7a75ecdd60b8bd8ca5d826c0dae093b',
+    'V1_spoofing.test.js': '1141ff7bdddcdcd0c85f51306d808892b456daa9d3090a475bdd69ac437d758e',
+    'V2_tampering.test.js': 'e43f95d828b09a7e887fc11fc8e1cbadfbaf120d5001b0161cf86c27cb31af90',
+    'V3_repudiation.test.js': 'faf3c5449fca5b8dc0c2ca3919fed54f63119dfd4bd78cd59430493eb9ecc2d1',
+    'V4_disclosure.test.js': 'd8998e8ae60878ce977aa64341fd69990b6fe69477f721ad28b23efeaf6cbb24',
+    'V5_dos.test.js': '4153b2b136bff66867f8c31287f444bbddf09b8d074d7164a6580f585a12e1d4',
+    'V6_elevation.test.js': 'ef8576c745cfc9468481d015bfb95bf63762256acd6add65be04e2dfe938a961'
   };
 
   test('los archivos de test existen y no están vacíos', () => {

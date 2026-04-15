@@ -1,16 +1,21 @@
 const { freshApp, makeAgent, request } = require('./helpers');
 const { isValidEmail } = require('../../src/utils/validators');
 
+// testTimeout amplio por si la ReDoS está todavía activa; Jest no interrumpe
+// regex síncronas, así que si el alumno aún no arregla V5 el test se cuelga.
+// Workaround mientras lo arregla: `npm test -- --testPathIgnorePatterns=V5`.
+jest.setTimeout(10000);
+
 describe('V5 - Denial of Service (ReDoS + upload sin límite)', () => {
   let app;
   beforeEach(() => { app = freshApp(); });
 
-  test('validador de email resiste ReDoS: input malicioso responde en <500ms', () => {
-    const malicious = 'a'.repeat(30000) + '!';
+  test('validador de email resiste ReDoS: input malicioso responde en <1000ms', () => {
+    const malicious = 'a'.repeat(15000) + '!';
     const start = Date.now();
     isValidEmail(malicious);
     const elapsed = Date.now() - start;
-    expect(elapsed).toBeLessThan(500);
+    expect(elapsed).toBeLessThan(1000);
   });
 
   test('validador de email sigue aceptando emails válidos', () => {

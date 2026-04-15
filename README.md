@@ -27,6 +27,13 @@ npm install
 npm start      # arranca en http://localhost:3000
 ```
 
+> **Si `npm install` falla compilando `better-sqlite3`**: necesitas toolchain nativo.
+> - **macOS**: `xcode-select --install`
+> - **Linux (Debian/Ubuntu)**: `sudo apt install build-essential python3`
+> - **Windows**: `npm install --global windows-build-tools` (PowerShell admin) o Visual Studio con "Desktop development with C++".
+>
+> Luego `rm -rf node_modules && npm install`.
+
 Cuentas de prueba: `neo/matrix` · `trinity/zion` · `admin/admin123`
 
 Corre los tests para ver el baseline rojo:
@@ -35,7 +42,13 @@ Corre los tests para ver el baseline rojo:
 npm test
 ```
 
-Deberías ver 6 bloques de tests fallando. Cada uno corresponde a una vulnerabilidad STRIDE.
+Deberías ver 7 bloques de tests fallando (V0 + V1..V6). Cada uno corresponde a una vulnerabilidad STRIDE.
+
+> **Si `npm test` parece colgarse sin salida**: es síntoma de **V5** (ReDoS). La regex catastrófica no es interrumpible por Jest. Workaround mientras lo arreglas:
+> ```bash
+> npm test -- --testPathIgnorePatterns=V5
+> ```
+> Una vez hayas aplicado el fix de V5, corre `npm test` completo para cerrar.
 
 ## Herramientas de análisis (el "MobSF" para web)
 
@@ -52,6 +65,8 @@ npm run scan:audit      # dependencias
 npm run scan:semgrep    # código (requiere Docker)
 npm run scan:zap        # app corriendo (requiere Docker + npm start en otra terminal)
 ```
+
+> **Para competir alcanza con correr al menos 1 de los 3.** Los 3 son ideales pedagógicamente, pero si el tiempo aprieta prioriza: `npm audit` (10s) > Semgrep (1 min) > ZAP (2-3 min).
 
 ## Las vulnerabilidades
 
