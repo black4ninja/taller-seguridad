@@ -9,7 +9,7 @@
     "test": "jest --testPathPattern=tests/security --runInBand --forceExit",
     "test:verbose": "jest --testPathPattern=tests/security --runInBand --forceExit --verbose",
     "scan:semgrep": "docker run --rm -v \"${PWD}:/src\" semgrep/semgrep semgrep --config=p/owasp-top-ten --config=p/nodejsscan /src/src",
-    "scan:zap": "docker run --rm -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:3000",
+    "scan:zap": "mkdir -p reports/zap && docker run --rm -t -u root -v \"${PWD}/reports/zap:/zap/wrk\" ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:3000 -r zap-report.html",
     "scan:audit": "npm audit"
   },
   "engines": {
