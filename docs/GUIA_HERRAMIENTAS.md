@@ -82,7 +82,7 @@ npm run scan:audit
 
 ### Qué debe detectar
 
-- `lodash@4.17.15` tiene al menos 2 CVEs conocidos (Prototype Pollution). Es un extra, no cuenta para los 6 tests, pero es buen ejercicio actualizarlo.
+- `lodash@4.17.15` tiene **6 vulnerabilidades** conocidas (severidad high/moderate): Prototype Pollution (x3), Command Injection, Code Injection vía `_.template`, y ReDoS. `npm audit` las lista con enlaces a GitHub Security Advisories. Es un extra, no cuenta para los 6 tests, pero es buen ejercicio actualizarlo.
 
 ### Fix típico
 
