@@ -100,7 +100,7 @@ npm install lodash@latest   # si el fix compatible no alcanza
 | Cookie sin HttpOnly (ZAP) | S | IA-5, SC-23 |
 | SQLi (Semgrep) | T | SI-10 |
 | Sin logs de auditoría | R | AU-2, AU-3 |
-| Stack trace / path traversal | I | SC-28, SI-11 |
+| Stack trace / path traversal | I | SI-10, SI-11 |
 | Regex catastrófica / upload sin límite | D | SC-5 |
 | Endpoint admin sin check de rol | E | AC-3, AC-6 |
 
