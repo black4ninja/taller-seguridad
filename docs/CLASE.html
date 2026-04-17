@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Hack the Campus — Clase (15 min)</title>
+<style>
+  :root { --bg:#0b0f0a; --fg:#33ff66; --dim:#1f9a3e; --accent:#ff2e63; --warn:#ffcc00; --muted:#7fb891; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; width: 100%; background: var(--bg); color: var(--fg);
+    font-family: 'Courier New', Consolas, monospace; overflow: hidden; }
+  .deck { height: 100vh; width: 100vw; position: relative; }
+  .slide { position: absolute; inset: 0; padding: 5vh 6vw; display: none;
+    flex-direction: column; overflow: hidden; }
+  .slide.active { display: flex; }
+  h1 { color: var(--accent); font-size: 3.2vw; text-transform: uppercase;
+    letter-spacing: 3px; margin-bottom: 2vh; }
+  h2 { color: var(--accent); font-size: 2.2vw; text-transform: uppercase;
+    letter-spacing: 2px; margin-bottom: 2vh; }
+  h3 { color: var(--warn); font-size: 1.6vw; margin-bottom: 1.5vh;
+    letter-spacing: 1px; }
+  p, li { font-size: 1.5vw; line-height: 1.6; margin-bottom: 1vh; }
+  ul, ol { padding-left: 2vw; }
+  li::marker { color: var(--warn); }
+  code { color: var(--warn); background: #000; padding: 0.1vh 0.5vw;
+    border: 1px solid var(--dim); font-size: 1.2vw; }
+  strong { color: var(--warn); }
+  em { color: var(--accent); font-style: normal; }
+  pre.banner { color: var(--fg); font-size: 0.9vw; line-height: 1.1;
+    text-shadow: 0 0 8px var(--dim); margin-bottom: 3vh; }
+  pre.code { background: #000; border: 1px solid var(--dim); padding: 1.5vh 1.5vw;
+    font-size: 1.1vw; line-height: 1.5; overflow: auto; color: var(--fg); }
+  pre.code .kw { color: var(--accent); }
+  pre.code .str { color: var(--warn); }
+  pre.code .com { color: var(--muted); font-style: italic; }
+  .center { text-align: center; justify-content: center; align-items: center;
+    display: flex; flex-direction: column; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2vw;
+    flex: 1; align-content: start; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5vw;
+    flex: 1; align-content: start; }
+  .card { border: 1px solid var(--dim); padding: 2vh 1.5vw;
+    background: rgba(51,255,102,0.04); border-radius: 4px; }
+  .card h3 { color: var(--accent); font-size: 1.4vw; margin-bottom: 1vh; }
+  .card ul { font-size: 1.1vw; }
+  .chain { display: flex; gap: 0.8vw; align-items: center; flex-wrap: wrap;
+    justify-content: center; margin: 3vh 0; }
+  .chain .step { border: 2px solid var(--dim); padding: 1.5vh 1.2vw;
+    background: rgba(51,255,102,0.08); border-radius: 4px; min-width: 10vw;
+    text-align: center; }
+  .chain .step strong { display: block; color: var(--accent); font-size: 1.3vw;
+    margin-bottom: 0.5vh; letter-spacing: 1px; }
+  .chain .step span { font-size: 0.9vw; color: var(--muted); }
+  .chain .arrow { color: var(--warn); font-size: 2vw; }
+  table { width: 100%; border-collapse: collapse; font-size: 1.2vw; }
+  th, td { padding: 0.8vh 1vw; text-align: left; border-bottom: 1px solid var(--dim); }
+  th { color: var(--accent); letter-spacing: 1px; }
+  td.letter { color: var(--warn); font-weight: bold; font-size: 1.8vw; width: 3vw; }
+  .footer-nav { position: fixed; bottom: 1.5vh; left: 0; right: 0; display: flex;
+    justify-content: space-between; padding: 0 2vw; font-size: 0.85vw;
+    color: var(--dim); pointer-events: none; }
+  .footer-nav .hint { pointer-events: auto; }
+  kbd { background: var(--dim); color: #000; padding: 0.1vh 0.4vw;
+    font-weight: bold; border-radius: 2px; font-size: 0.85vw; }
+  .big { font-size: 2vw; }
+  .quote { border-left: 3px solid var(--accent); padding-left: 1.5vw;
+    font-style: italic; color: var(--warn); font-size: 1.6vw; }
+  .progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent);
+    transition: width 0.3s; z-index: 100; }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+<!-- SLIDE 1: Portada -->
+<section class="slide active center">
+<pre class="banner"> _   _            _      _   _            ____
+| | | | __ _  ___| | __ | |_| |__   ___  / ___|__ _ _ __ ___  _ __  _   _ ___
+| |_| |/ _` |/ __| |/ / | __| '_ \ / _ \| |   / _` | '_ ` _ \| '_ \| | | / __|
+|  _  | (_| | (__|   <  | |_| | | |  __/| |__| (_| | | | | | | |_) | |_| \__ \
+|_| |_|\__,_|\___|_|\_\  \__|_| |_|\___(_)____\__,_|_| |_| |_| .__/ \__,_|___/
+                                                             |_|           </pre>
+<h1>Clase preparatoria</h1>
+<p class="big">CTF de seguridad web · STRIDE aplicado · 15 min</p>
+<p style="color:var(--muted); margin-top:3vh;">Presiona <kbd>→</kbd> para avanzar · <kbd>F</kbd> pantalla completa</p>
+</section>
+
+<!-- SLIDE 2: ¿Qué vamos a hacer? -->
+<section class="slide">
+<h2>¿Qué va a pasar hoy?</h2>
+<p>Vas a arreglar un portal web <em>deliberadamente vulnerable</em> siguiendo un proceso estructurado.</p>
+<div class="chain">
+  <div class="step"><strong>CLONAR</strong><span>repo base</span></div>
+  <div class="arrow">→</div>
+  <div class="step"><strong>DETECTAR</strong><span>con herramientas</span></div>
+  <div class="arrow">→</div>
+  <div class="step"><strong>CLASIFICAR</strong><span>con STRIDE</span></div>
+  <div class="arrow">→</div>
+  <div class="step"><strong>ARREGLAR</strong><span>en código</span></div>
+  <div class="arrow">→</div>
+  <div class="step"><strong>VALIDAR</strong><span>con tests</span></div>
+</div>
+<p><strong>7 vulnerabilidades</strong> · <strong>90 min</strong> · individual · gana quien primero tenga los tests verdes.</p>
+<p style="margin-top:2vh;">Pero antes de empezar, necesitas entender <em>tres cosas</em>: el loop conceptual, cómo leer los tests, y cómo se aplica a tus propios proyectos.</p>
+</section>
+
+<!-- SLIDE 3: El loop completo -->
+<section class="slide">
+<h2>El loop que vas a repetir 7 veces</h2>
+<div class="chain">
+  <div class="step"><strong>SÍNTOMA</strong><span>escáner dice "algo raro"</span></div>
+  <div class="arrow">→</div>
+  <div class="step"><strong>CATEGORÍA</strong><span>STRIDE: ¿cuál letra?</span></div>
+  <div class="arrow">→</div>
+  <div class="step"><strong>CONTROL</strong><span>NIST 800-53: ¿qué mitigar?</span></div>
+  <div class="arrow">→</div>
+  <div class="step"><strong>FIX</strong><span>código concreto</span></div>
+  <div class="arrow">→</div>
+  <div class="step"><strong>VERIFY</strong><span>test pasa</span></div>
+</div>
+<p class="quote">El escáner encuentra síntomas. STRIDE da la categoría. NIST dice qué control implementar. Tu commit cierra el ciclo.</p>
+<p><strong>Saltarse pasos = remediar a ciegas.</strong> El orden importa.</p>
+</section>
+
+<!-- SLIDE 4: STRIDE recordatorio -->
+<section class="slide">
+<h2>STRIDE — las 6 letras (recordatorio)</h2>
+<table>
+  <tr><th style="width:3vw;">Letra</th><th>Amenaza</th><th>Propiedad afectada</th><th>Pregunta clave</th></tr>
+  <tr><td class="letter">S</td><td>Spoofing (suplantación)</td><td>Autenticación</td><td>¿Puedo hacerme pasar por otro?</td></tr>
+  <tr><td class="letter">T</td><td>Tampering (manipulación)</td><td>Integridad</td><td>¿Puedo modificar datos?</td></tr>
+  <tr><td class="letter">R</td><td>Repudiation (repudio)</td><td>No-repudio</td><td>¿Puedo negar mis acciones?</td></tr>
+  <tr><td class="letter">I</td><td>Information Disclosure</td><td>Confidencialidad</td><td>¿Puedo ver datos no autorizados?</td></tr>
+  <tr><td class="letter">D</td><td>Denial of Service</td><td>Disponibilidad</td><td>¿Puedo tumbar el servicio?</td></tr>
+  <tr><td class="letter">E</td><td>Elevation of Privilege</td><td>Autorización</td><td>¿Puedo obtener más permisos?</td></tr>
+</table>
+<p style="margin-top:2vh;"><strong>Regla práctica</strong>: cada flecha que cruza un límite de confianza en tu DFD es candidata a las 6 preguntas.</p>
+</section>
+
+<!-- SLIDE 5: Stack -->
+<section class="slide">
+<h2>El stack del lab</h2>
+<div class="grid-2">
+  <div class="card">
+    <h3>Lo que ya conoces</h3>
+    <ul>
+      <li><strong>Node.js 20+</strong> — runtime</li>
+      <li><strong>Express</strong> — routing HTTP</li>
+      <li><strong>EJS</strong> — templates</li>
+      <li>Arquitectura <strong>MVC + servicios</strong></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Lo nuevo</h3>
+    <ul>
+      <li><strong>better-sqlite3 in-memory</strong> — BD sin instalar nada</li>
+      <li><strong>Jest + supertest</strong> — los tests</li>
+      <li><strong>Docker</strong> — para ZAP y Semgrep</li>
+    </ul>
+  </div>
+</div>
+<p style="margin-top:2vh;">Todo corre <strong>100% local</strong>. Sin servidor central, sin cuentas externas, sin deploy. Clonas y arreglas.</p>
+</section>
+
+<!-- SLIDE 6: Cómo leer un test (1) anatomía -->
+<section class="slide">
+<h2>Cómo leer un test — anatomía</h2>
+<p>Un test de Jest es solo una función con <em>aserciones</em>. Lee de arriba a abajo como narrativa.</p>
+<pre class="code"><span class="kw">describe</span>(<span class="str">'V2 - Tampering (SQL Injection)'</span>, () =&gt; {
+  <span class="kw">test</span>(<span class="str">'payload OR 1=1 no debe dumpear todos los posts'</span>, <span class="kw">async</span> () =&gt; {
+    <span class="com">// 1. Dado: una app corriendo con datos de prueba</span>
+    <span class="kw">const</span> res = <span class="kw">await</span> request(app).get(<span class="str">"/forum/search?q=' OR '1'='1"</span>);
+
+    <span class="com">// 2. Entonces: la respuesta NO debe contener todos los posts</span>
+    <span class="kw">expect</span>(res.status).toBeLessThan(<span class="str">500</span>);
+    <span class="kw">expect</span>(markers).toBeLessThanOrEqual(<span class="str">3</span>);
+  });
+});</pre>
+<ul style="margin-top:2vh;">
+  <li><code>describe</code> = grupo de tests relacionados (una vuln)</li>
+  <li><code>test</code> = un caso concreto</li>
+  <li><code>expect(...).toXxx(...)</code> = aserción (la barra de aprobación)</li>
+</ul>
+</section>
+
+<!-- SLIDE 7: Cómo leer un test (2) supertest -->
+<section class="slide">
+<h2>Cómo leer un test — supertest</h2>
+<p><code>supertest</code> simula peticiones HTTP contra tu app <em>sin abrir un puerto real</em>.</p>
+<pre class="code"><span class="com">// Simula: GET /files/download?name=../../package.json</span>
+<span class="kw">const</span> res = <span class="kw">await</span> request(app)
+  .get(<span class="str">'/files/download?name='</span> + encodeURIComponent(<span class="str">'../package.json'</span>));
+
+<span class="com">// Simula: POST /auth/login con form-data</span>
+<span class="kw">const</span> res = <span class="kw">await</span> request(app)
+  .post(<span class="str">'/auth/login'</span>)
+  .type(<span class="str">'form'</span>)
+  .send({ username: <span class="str">'neo'</span>, password: <span class="str">'matrix'</span> });
+
+<span class="com">// `res.status` = código HTTP (200, 400, 429...)</span>
+<span class="com">// `res.text`   = cuerpo de la respuesta (HTML o texto)</span>
+<span class="com">// `res.headers`= headers HTTP (Set-Cookie, Content-Type...)</span></pre>
+<p style="margin-top:2vh;"><strong>Traducción rápida</strong>: <code>request(app).get('/ruta')</code> es lo mismo que <code>curl localhost:3000/ruta</code>, pero <em>dentro</em> de Jest.</p>
+</section>
+
+<!-- SLIDE 8: Cómo leer un test (3) qué espera -->
+<section class="slide">
+<h2>Cómo leer un test — el test es la <em>spec del fix</em></h2>
+<p>Si entiendes lo que el test espera, ya sabes qué tiene que hacer tu código.</p>
+<pre class="code"><span class="kw">test</span>(<span class="str">'usuario normal no puede ver /admin/users'</span>, <span class="kw">async</span> () =&gt; {
+  <span class="kw">const</span> agent = makeAgent(app);
+  <span class="kw">await</span> agent.post(<span class="str">'/auth/login'</span>).send({ username: <span class="str">'neo'</span>, password: <span class="str">'matrix'</span> });
+  <span class="kw">const</span> res = <span class="kw">await</span> agent.get(<span class="str">'/admin/users'</span>);
+  <span class="kw">expect</span>(res.status).toBe(<span class="str">403</span>);
+});</pre>
+<p style="margin-top:2vh;"><strong>Traducción paso a paso</strong>:</p>
+<ol>
+  <li>Me logueo como <code>neo</code> (un usuario normal, no admin)</li>
+  <li>Intento ver <code>/admin/users</code></li>
+  <li>Espero que me respondas <strong>403 Forbidden</strong></li>
+</ol>
+<p style="margin-top:1.5vh;"><em>→ Fix implícito</em>: agregar un middleware que devuelva 403 cuando el usuario no es admin.</p>
+</section>
+
+<!-- SLIDE 9: Walkthrough V0 -->
+<section class="slide">
+<h2>El walkthrough de V0 — 8 pasos</h2>
+<p>V0 ya viene <strong>resuelta en <code>docs/WALKTHROUGH.md</code></strong>. Cópiala como plantilla mental.</p>
+<div class="grid-2" style="margin-top:2vh;">
+<ol>
+  <li><strong>Observar</strong> el síntoma (<code>npm test</code>)</li>
+  <li><strong>Reproducir</strong> manualmente (curl)</li>
+  <li><strong>Detectar</strong> con ZAP / Semgrep / npm audit</li>
+  <li><strong>Clasificar</strong> con STRIDE (¿qué letra?)</li>
+</ol>
+<ol start="5">
+  <li><strong>Mapear</strong> a control NIST 800-53</li>
+  <li><strong>Implementar</strong> el fix mínimo</li>
+  <li><strong>Validar</strong> (<code>npm test</code> verde)</li>
+  <li><strong>Documentar</strong> en <code>STRIDE.md</code></li>
+</ol>
+</div>
+<p class="quote" style="margin-top:2vh;">Si te atoras más de 15 min en una vuln, relee el walkthrough y aplica los 8 pasos a esa V. La técnica es la misma; lo que cambia es el detalle técnico.</p>
+</section>
+
+<!-- SLIDE 10: STRIDE fuera del lab -->
+<section class="slide">
+<h2>STRIDE en <em>tus</em> proyectos</h2>
+<p>Este loop no vive solo en este lab. Aplica a cualquier sistema. Tres pasos para adaptarlo:</p>
+<div class="grid-3">
+  <div class="card">
+    <h3>1. Dibuja un DFD</h3>
+    <ul>
+      <li>Usuarios = cuadros</li>
+      <li>Procesos = círculos</li>
+      <li>Datos en reposo = cilindros</li>
+      <li>Flujos = flechas</li>
+      <li><strong>Límites de confianza</strong> = líneas punteadas</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>2. Cada flecha que cruza un límite</h3>
+    <ul>
+      <li>Hazle las 6 preguntas de STRIDE</li>
+      <li>Anota qué letras aplican</li>
+      <li>Estás viendo <em>dónde</em> pueden atacar</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>3. Por cada letra aplicable</h3>
+    <ul>
+      <li>Elige 1-2 controles NIST 800-53</li>
+      <li>Diseña la mitigación</li>
+      <li>Escribe un test que la verifique</li>
+    </ul>
+  </div>
+</div>
+<p style="margin-top:2vh;"><strong>Lo mismo que harás hoy aquí</strong>, pero en vez de venir con vulns pre-plantadas, tú identificas dónde están en tu propio código.</p>
+</section>
+
+<!-- SLIDE 11: Las 3 herramientas -->
+<section class="slide">
+<h2>Las 3 herramientas ("MobSF para web")</h2>
+<div class="grid-3">
+  <div class="card">
+    <h3>npm audit (SCA)</h3>
+    <p>Revisa <strong>dependencias</strong> contra GitHub Advisories.</p>
+    <pre class="code" style="font-size:0.95vw; margin-top:1vh;">npm run scan:audit</pre>
+    <p style="font-size:1vw; margin-top:1vh; color:var(--muted);">10 segundos. Empieza aquí.</p>
+  </div>
+  <div class="card">
+    <h3>Semgrep (SAST)</h3>
+    <p>Analiza el <strong>código fuente</strong> con reglas OWASP.</p>
+    <pre class="code" style="font-size:0.95vw; margin-top:1vh;">npm run scan:semgrep</pre>
+    <p style="font-size:1vw; margin-top:1vh; color:var(--muted);">~1 min. Detecta SQLi y secretos.</p>
+  </div>
+  <div class="card">
+    <h3>OWASP ZAP (DAST)</h3>
+    <p>Escanea la app <strong>corriendo</strong> desde fuera.</p>
+    <pre class="code" style="font-size:0.95vw; margin-top:1vh;">npm run scan:zap</pre>
+    <p style="font-size:1vw; margin-top:1vh; color:var(--muted);">~2-3 min. XSS, headers, cookies.</p>
+  </div>
+</div>
+<p style="margin-top:2vh;">Para competir <strong>basta con 1 de las 3</strong>. Los 3 juntos te dan cobertura completa — pero ninguna por sí sola encuentra todo.</p>
+</section>
+
+<!-- SLIDE 12: Mecánica -->
+<section class="slide">
+<h2>Mecánica de la competencia</h2>
+<div class="grid-2">
+  <div>
+    <h3>Reglas</h3>
+    <ul>
+      <li>Individual · 1:30 horas</li>
+      <li>100% local (cero cuentas, cero deploy)</li>
+      <li><strong>No edites <code>tests/security/</code></strong> — hay hash-lock</li>
+      <li>Gana quien primero muestre <code>npm test</code> con <strong>28/28 ✓</strong></li>
+      <li>Desempate: orden en que levantan la mano</li>
+    </ul>
+  </div>
+  <div>
+    <h3>Entregable paralelo</h3>
+    <ul>
+      <li>Llenar <code>docs/STRIDE.md</code> mientras resuelves</li>
+      <li>Por cada vuln: letra STRIDE · control NIST · archivo modificado</li>
+      <li>Es tu "notebook" del loop aplicado</li>
+    </ul>
+  </div>
+</div>
+<p class="quote" style="margin-top:2vh;">El test es la especificación. Si los 28 tests están en verde, el fix es correcto.</p>
+</section>
+
+<!-- SLIDE 13: Final -->
+<section class="slide center">
+<h1>Empieza ahora</h1>
+<pre class="code" style="font-size:1.4vw; text-align:left; margin: 2vh 0;">git clone &lt;url-del-repo&gt; hack-the-campus
+cd hack-the-campus
+npm install
+npm start       <span class="com"># en una terminal, :3000</span>
+npm test        <span class="com"># en otra, 28 rojos = baseline correcto</span></pre>
+<p class="big" style="margin-top:3vh;">Primer paso: abre <code>docs/WALKTHROUGH.md</code>.</p>
+<p class="big" style="color:var(--warn); margin-top:2vh;">Primer fix: V0. Luego V1..V6 a tu ritmo.</p>
+<p style="margin-top:4vh; color:var(--muted);">Buena caza.</p>
+</section>
+
+</div>
+
+<div class="footer-nav">
+  <span class="hint"><kbd>←</kbd> <kbd>→</kbd> navegar · <kbd>F</kbd> fullscreen · <kbd>Home</kbd>/<kbd>End</kbd> inicio/fin</span>
+  <span id="counter" class="hint"></span>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+
+  function show(i) {
+    current = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === current));
+    counter.textContent = `${current + 1} / ${slides.length}`;
+    progress.style.width = ((current + 1) / slides.length * 100) + '%';
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault(); show(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault(); show(current - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault(); show(0);
+    } else if (e.key === 'End') {
+      e.preventDefault(); show(slides.length - 1);
+    } else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.footer-nav')) return;
+    const rect = document.body.getBoundingClientRect();
+    if (e.clientX > rect.width / 2) show(current + 1);
+    else show(current - 1);
+  });
+
+  show(0);
+</script>
+</body>
+</html>
