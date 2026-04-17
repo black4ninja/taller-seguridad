@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Hack the Campus — Las 7 vulnerabilidades</title>
+<style>
+  :root { --bg:#0b0f0a; --fg:#33ff66; --dim:#1f9a3e; --accent:#ff2e63; --warn:#ffcc00; --muted:#7fb891; --bad:#ff5566; --good:#66ff99; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; width: 100%; background: var(--bg); color: var(--fg);
+    font-family: 'Courier New', Consolas, monospace; overflow: hidden; }
+  .deck { height: 100vh; width: 100vw; position: relative; }
+  .slide { position: absolute; inset: 0; padding: 4vh 5vw;
+    flex-direction: column; overflow: hidden; visibility: hidden; display: flex; }
+  .slide.active { visibility: visible; }
+  h1 { color: var(--accent); font-size: 3vw; text-transform: uppercase;
+    letter-spacing: 3px; margin-bottom: 2vh; }
+  h2 { color: var(--accent); font-size: 2vw; text-transform: uppercase;
+    letter-spacing: 2px; margin-bottom: 1.5vh; }
+  h2 .badge { color: var(--warn); font-size: 1.3vw; padding: 0.3vh 0.8vw;
+    border: 1px solid var(--warn); border-radius: 3px; margin-left: 1vw;
+    letter-spacing: 1px; vertical-align: middle; }
+  h3 { color: var(--warn); font-size: 1.2vw; margin-bottom: 0.8vh;
+    letter-spacing: 1px; text-transform: uppercase; }
+  p, li { font-size: 1.1vw; line-height: 1.5; }
+  ul, ol { padding-left: 2vw; }
+  li { margin-bottom: 0.5vh; }
+  li::marker { color: var(--warn); }
+  code { color: var(--warn); background: #000; padding: 0.05vh 0.4vw;
+    border: 1px solid var(--dim); font-size: 1vw; }
+  strong { color: var(--warn); }
+  em { color: var(--accent); font-style: normal; }
+  pre.banner { color: var(--fg); font-size: 0.85vw; line-height: 1.1;
+    text-shadow: 0 0 8px var(--dim); margin-bottom: 2vh; }
+  pre.code { background: #000; border: 1px solid var(--dim); padding: 1vh 1vw;
+    font-size: 0.95vw; line-height: 1.45; overflow: auto; color: var(--fg);
+    border-radius: 3px; }
+  pre.code.bad { border-left: 4px solid var(--bad); }
+  pre.code.good { border-left: 4px solid var(--good); }
+  pre.code .kw { color: var(--accent); }
+  pre.code .str { color: var(--warn); }
+  pre.code .com { color: var(--muted); font-style: italic; }
+  pre.code .bad-line { background: rgba(255,85,102,0.15); display: block;
+    margin: 0 -1vw; padding: 0 1vw; }
+  pre.code .good-line { background: rgba(102,255,153,0.12); display: block;
+    margin: 0 -1vw; padding: 0 1vw; }
+  .center { text-align: center; justify-content: center; align-items: center; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vw;
+    flex: 1; align-content: start; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2vw;
+    flex: 1; align-content: start; }
+  .step-box { border: 1px solid var(--dim); padding: 1.2vh 1.2vw;
+    background: rgba(51,255,102,0.04); border-radius: 4px; margin-bottom: 1vh; }
+  .step-box .num { color: var(--accent); font-weight: bold; font-size: 1.3vw;
+    margin-right: 0.6vw; }
+  .step-box .label { color: var(--warn); text-transform: uppercase;
+    font-size: 0.9vw; letter-spacing: 1px; margin-right: 0.5vw; }
+  .vuln-header { display: flex; gap: 1vw; align-items: center; margin-bottom: 2vh;
+    padding-bottom: 1.5vh; border-bottom: 1px solid var(--dim); }
+  .vuln-letter { font-size: 5vw; color: var(--bad); font-weight: bold;
+    line-height: 1; padding: 0 1vw; border: 3px solid var(--bad); border-radius: 6px; }
+  .vuln-title { flex: 1; }
+  .vuln-title h2 { margin-bottom: 0.5vh; font-size: 2.4vw; }
+  .vuln-title .meta { color: var(--muted); font-size: 1vw; }
+  .vuln-title .meta strong { color: var(--warn); }
+  .footer-nav { position: fixed; bottom: 1vh; left: 0; right: 0; display: flex;
+    justify-content: space-between; padding: 0 2vw; font-size: 0.8vw;
+    color: var(--dim); pointer-events: none; }
+  .footer-nav .hint { pointer-events: auto; }
+  kbd { background: var(--dim); color: #000; padding: 0.05vh 0.4vw;
+    font-weight: bold; border-radius: 2px; font-size: 0.8vw; }
+  .progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent);
+    transition: width 0.3s; z-index: 100; }
+  table { width: 100%; border-collapse: collapse; font-size: 1vw; }
+  th, td { padding: 0.6vh 0.8vw; text-align: left; border-bottom: 1px solid var(--dim); }
+  th { color: var(--accent); letter-spacing: 1px; }
+  td.letter { color: var(--warn); font-weight: bold; font-size: 1.4vw; width: 3vw; }
+  .quote { border-left: 3px solid var(--accent); padding-left: 1.2vw;
+    font-style: italic; color: var(--warn); font-size: 1.3vw; margin: 1vh 0; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vw;
+    margin-bottom: 1vh; }
+  .row > div h3 { margin-bottom: 0.5vh; }
+  .tag { display: inline-block; padding: 0.2vh 0.6vw; font-size: 0.85vw;
+    border: 1px solid var(--dim); border-radius: 2px; margin-right: 0.4vw;
+    color: var(--muted); }
+  .tag.stride { color: var(--bad); border-color: var(--bad); }
+  .tag.nist { color: var(--warn); border-color: var(--warn); }
+  .tag.tool { color: var(--good); border-color: var(--good); }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+<!-- 1: Portada -->
+<section class="slide active center">
+<pre class="banner"> _   _            _      _   _            ____
+| | | | __ _  ___| | __ | |_| |__   ___  / ___|__ _ _ __ ___  _ __  _   _ ___
+| |_| |/ _` |/ __| |/ / | __| '_ \ / _ \| |   / _` | '_ ` _ \| '_ \| | | / __|
+|  _  | (_| | (__|   <  | |_| | | |  __/| |__| (_| | | | | | | |_) | |_| \__ \
+|_| |_|\__,_|\___|_|\_\  \__|_| |_|\___(_)____\__,_|_| |_| |_| .__/ \__,_|___/
+                                                             |_|           </pre>
+<h1>Las 7 vulnerabilidades</h1>
+<p style="font-size:1.5vw;">Cómo se ven · Cómo se detectan · Cómo se arreglan</p>
+<p style="color:var(--muted); margin-top:3vh;">Presiona <kbd>→</kbd> para avanzar · <kbd>F</kbd> pantalla completa</p>
+</section>
+
+<!-- 2: Mapa general -->
+<section class="slide">
+<h2>El mapa de las 7</h2>
+<table>
+  <tr><th style="width:3vw;"></th><th>STRIDE</th><th>Vulnerabilidad</th><th>Dónde vive</th><th>Control NIST</th></tr>
+  <tr><td class="letter">V0</td><td>T</td><td>Reflected XSS</td><td><code>routes/status.js</code></td><td>SI-10, SC-18</td></tr>
+  <tr><td class="letter">V1</td><td>S</td><td>Login débil (3 fallos)</td><td><code>app.js</code>, <code>authController.js</code></td><td>IA-2, IA-5, AC-7</td></tr>
+  <tr><td class="letter">V2</td><td>T</td><td>SQL Injection</td><td><code>repositories/forumRepo.js</code></td><td>SI-10</td></tr>
+  <tr><td class="letter">V3</td><td>R</td><td>Sin auditoría</td><td>(ausencia) <code>middlewares/audit.js</code></td><td>AU-2, AU-3, AU-10</td></tr>
+  <tr><td class="letter">V4</td><td>I</td><td>Path traversal + stack traces</td><td><code>controllers/fileController.js</code></td><td>SI-10, SI-11</td></tr>
+  <tr><td class="letter">V5</td><td>D</td><td>ReDoS + upload sin límite</td><td><code>utils/validators.js</code>, <code>uploadService.js</code></td><td>SC-5</td></tr>
+  <tr><td class="letter">V6</td><td>E</td><td>Endpoints admin sin RBAC</td><td><code>routes/admin.js</code></td><td>AC-3, AC-6</td></tr>
+</table>
+<p style="margin-top:2vh;">Las próximas <strong>14 slides</strong> (2 por vuln) muestran el código vulnerable, cómo detectarla y el fix. Mismo patrón cada vez.</p>
+</section>
+
+<!-- =================== V0 — XSS =================== -->
+<section class="slide">
+<div class="vuln-header">
+  <div class="vuln-letter">T</div>
+  <div class="vuln-title">
+    <h2>V0 · Reflected XSS</h2>
+    <div class="meta"><span class="tag stride">Tampering</span> <span class="tag nist">SI-10</span> <span class="tag nist">SC-18</span> <span class="tag tool">ZAP 40012</span> <span class="tag tool">Semgrep</span></div>
+  </div>
+</div>
+<h3>El código vulnerable — <code>src/routes/status.js</code></h3>
+<pre class="code bad">router.get(<span class="str">'/'</span>, (req, res) => {
+  <span class="kw">const</span> msg = req.query.msg || <span class="str">'OK'</span>;
+  res.type(<span class="str">'html'</span>).send(
+<span class="bad-line">    `&lt;div class="post"&gt;Status: ${msg}&lt;/div&gt;`</span>
+  );
+});</pre>
+<p style="margin-top:1.5vh;"><strong>El bug</strong>: <code>msg</code> viene del usuario y se pega tal cual al HTML. Si manda <code>&lt;script&gt;</code>, el navegador lo ejecuta.</p>
+<p><em>Por qué es Tampering</em>: el atacante manipula el navegador de OTRA víctima — inyecta JS que corre con su sesión.</p>
+</section>
+
+<section class="slide">
+<h2>V0 · Detección y fix</h2>
+<div class="row">
+  <div>
+    <h3>Cómo detectarla</h3>
+    <pre class="code">curl <span class="str">'http://localhost:3000/status?msg=&lt;script&gt;alert(1)&lt;/script&gt;'</span></pre>
+    <p style="margin-top:1vh;">El HTML devuelve el <code>&lt;script&gt;</code> literal. En navegador: popup.</p>
+    <p style="margin-top:1vh;"><strong>ZAP</strong>: alerta <code>40012</code> "Cross Site Scripting (Reflected)".</p>
+    <p><strong>Semgrep</strong>: regla <code>direct-response-write</code>.</p>
+  </div>
+  <div>
+    <h3>El fix</h3>
+    <pre class="code good"><span class="kw">function</span> escapeHtml(s) {
+  <span class="kw">return</span> <span class="kw">String</span>(s)
+    .replace(/&amp;/g, <span class="str">'&amp;amp;'</span>)
+    .replace(/&lt;/g, <span class="str">'&amp;lt;'</span>)
+    .replace(/&gt;/g, <span class="str">'&amp;gt;'</span>)
+    .replace(/"/g, <span class="str">'&amp;quot;'</span>);
+}
+<span class="good-line">res.send(`...Status: ${escapeHtml(msg)}...`);</span></pre>
+    <p style="margin-top:1vh;"><strong>Regla mental</strong>: cualquier dato de usuario que vaya a HTML, escápalo. Mejor aún: usa templates (EJS con <code>&lt;%= %&gt;</code> ya escapa).</p>
+  </div>
+</div>
+</section>
+
+<!-- =================== V1 — Spoofing =================== -->
+<section class="slide">
+<div class="vuln-header">
+  <div class="vuln-letter">S</div>
+  <div class="vuln-title">
+    <h2>V1 · Login débil (3 problemas en uno)</h2>
+    <div class="meta"><span class="tag stride">Spoofing</span> <span class="tag nist">IA-2</span> <span class="tag nist">IA-5</span> <span class="tag nist">AC-7</span> <span class="tag tool">ZAP 10010</span></div>
+  </div>
+</div>
+<h3>Tres bugs combinados</h3>
+<pre class="code bad"><span class="com">// (1) authController.js — mensajes diferenciados (user enumeration)</span>
+<span class="bad-line"><span class="kw">if</span> (err.code === <span class="str">'USER_NOT_FOUND'</span>) <span class="kw">return</span> render({ error: <span class="str">'Usuario no existe'</span> });</span>
+<span class="bad-line"><span class="kw">if</span> (err.code === <span class="str">'BAD_PASSWORD'</span>)  <span class="kw">return</span> render({ error: <span class="str">'Contraseña incorrecta'</span> });</span>
+
+<span class="com">// (2) routes/auth.js — sin rate limit</span>
+<span class="bad-line">router.post(<span class="str">'/login'</span>, ctrl.doLogin);  <span class="com">// 1000 intentos/seg, ningún tope</span></span>
+
+<span class="com">// (3) app.js — cookie sin HttpOnly</span>
+session({ cookie: { <span class="bad-line">httpOnly: <span class="kw">false</span>, sameSite: <span class="kw">false</span></span> } })</pre>
+<p style="margin-top:1vh;"><em>Por qué es Spoofing</em>: facilita que un atacante <strong>se haga pasar por otro usuario</strong>. Enumera usernames, fuerza bruta, roba cookie con XSS.</p>
+</section>
+
+<section class="slide">
+<h2>V1 · Detección y fix</h2>
+<div class="row">
+  <div>
+    <h3>Cómo detectarla</h3>
+    <pre class="code"><span class="com"># Probar enumeration:</span>
+curl -d <span class="str">"username=fake&amp;password=x"</span> ...
+curl -d <span class="str">"username=neo&amp;password=x"</span>  ...
+<span class="com"># Mensajes diferentes = bug</span>
+
+<span class="com"># Probar rate limit:</span>
+<span class="kw">for</span> i <span class="kw">in</span> {1..20}; <span class="kw">do</span>
+  curl -d <span class="str">"u=neo&amp;p=wrong"</span> ...
+<span class="kw">done</span>
+<span class="com"># Si los 20 responden 401 = bug</span></pre>
+    <p style="margin-top:1vh;"><strong>ZAP</strong>: <code>10010</code> "Cookie No HttpOnly Flag".</p>
+  </div>
+  <div>
+    <h3>El fix (3 cambios)</h3>
+    <pre class="code good"><span class="com">// (1) Mensaje genérico:</span>
+<span class="good-line"><span class="kw">return</span> render({ error: <span class="str">'Credenciales inválidas'</span> });</span>
+
+<span class="com">// (2) Rate limit middleware:</span>
+<span class="good-line">router.post(<span class="str">'/login'</span>, loginRateLimit, ctrl.doLogin);</span>
+
+<span class="com">// (3) Cookie endurecida:</span>
+session({ cookie: {
+<span class="good-line">  httpOnly: <span class="kw">true</span>,</span>
+<span class="good-line">  sameSite: <span class="str">'strict'</span>,</span>
+  secure: process.env.NODE_ENV === <span class="str">'production'</span>
+}})</pre>
+  </div>
+</div>
+</section>
+
+<!-- =================== V2 — SQLi =================== -->
+<section class="slide">
+<div class="vuln-header">
+  <div class="vuln-letter">T</div>
+  <div class="vuln-title">
+    <h2>V2 · SQL Injection</h2>
+    <div class="meta"><span class="tag stride">Tampering</span> <span class="tag nist">SI-10</span> <span class="tag tool">Semgrep tainted-sql-string</span></div>
+  </div>
+</div>
+<h3>El código vulnerable — <code>src/repositories/forumRepo.js</code></h3>
+<pre class="code bad"><span class="kw">function</span> searchPosts(q) {
+<span class="bad-line">  <span class="kw">const</span> sql = `SELECT * FROM posts WHERE title LIKE <span class="str">'%${q}%'</span> OR body LIKE <span class="str">'%${q}%'</span>`;</span>
+  <span class="kw">return</span> getDb().prepare(sql).all();
+}</pre>
+<p style="margin-top:1.5vh;"><strong>El bug</strong>: <code>q</code> (input del usuario) se concatena directo en la query. Cualquier comilla que mande el atacante <em>cierra el string</em> y le permite escribir SQL libremente.</p>
+<p style="margin-top:1vh;"><strong>Payloads que muestran el agujero:</strong></p>
+<pre class="code"><span class="com"># Devuelve TODOS los posts (la cláusula '1'='1' siempre es true):</span>
+/forum/search?q=<span class="str">' OR '1'='1</span>
+
+<span class="com"># Filtra la tabla users (UNION mezcla resultados):</span>
+/forum/search?q=<span class="str">' UNION SELECT id,username,password,role,email FROM users--</span></pre>
+</section>
+
+<section class="slide">
+<h2>V2 · Detección y fix</h2>
+<div class="row">
+  <div>
+    <h3>Cómo detectarla</h3>
+    <p><strong>Manual</strong>: meter una comilla en cualquier input que llegue a la BD. Si la respuesta cambia raro, hay SQLi.</p>
+    <p style="margin-top:1vh;"><strong>Semgrep</strong>:</p>
+    <pre class="code">javascript.express.security.injection
+.tainted-sql-string
+
+<span class="com">"User input flows into a raw SQL string"</span></pre>
+    <p style="margin-top:1vh;"><strong>ZAP</strong> también puede detectarla con <em>Active Scan</em>, no solo baseline.</p>
+  </div>
+  <div>
+    <h3>El fix — prepared statements</h3>
+    <pre class="code good"><span class="kw">function</span> searchPosts(q) {
+  <span class="kw">const</span> pattern = `%${q}%`;
+  <span class="kw">return</span> getDb()
+<span class="good-line">    .prepare(<span class="str">'SELECT * FROM posts WHERE title LIKE ? OR body LIKE ?'</span>)</span>
+<span class="good-line">    .all(pattern, pattern);</span>
+}</pre>
+    <p style="margin-top:1vh;"><strong>Cómo funciona</strong>: la BD recibe la query con placeholders <code>?</code> y los valores aparte. La BD trata los valores como <em>datos</em>, no como SQL. La inyección se vuelve imposible.</p>
+    <p style="margin-top:1vh;"><strong>Regla mental</strong>: si concatenas SQL con <code>+</code> o template literals, lo estás haciendo mal. Siempre placeholders.</p>
+  </div>
+</div>
+</section>
+
+<!-- =================== V3 — Repudiation =================== -->
+<section class="slide">
+<div class="vuln-header">
+  <div class="vuln-letter">R</div>
+  <div class="vuln-title">
+    <h2>V3 · Sin auditoría</h2>
+    <div class="meta"><span class="tag stride">Repudiation</span> <span class="tag nist">AU-2</span> <span class="tag nist">AU-3</span> <span class="tag nist">AU-10</span> <span class="tag tool">(no tool · revisión manual)</span></div>
+  </div>
+</div>
+<h3>El código vulnerable — la ausencia es el bug</h3>
+<pre class="code bad"><span class="com">// authController.js — login exitoso, NO se registra:</span>
+<span class="kw">function</span> doLogin(req, res) {
+  <span class="kw">const</span> user = authService.authenticate(...);
+  req.session.user = user;
+<span class="bad-line">  res.redirect(<span class="str">'/'</span>);  <span class="com">// ¿quién entró? ¿cuándo? Nadie sabe.</span></span>
+}
+
+<span class="com">// adminController.js — promover a admin sin dejar rastro:</span>
+<span class="kw">function</span> promoteUser(req, res) {
+<span class="bad-line">  userRepo.updateRole(req.params.id, <span class="str">'admin'</span>);  <span class="com">// silencioso</span></span>
+  res.redirect(<span class="str">'/admin/users'</span>);
+}</pre>
+<p style="margin-top:1.5vh;"><em>Por qué es Repudiation</em>: si no hay logs, un atacante (o un usuario) puede <strong>negar haber hecho la acción</strong>. No tienes evidencia.</p>
+<p><em>Esta vuln no la encuentra ningún escáner automático</em> — es <strong>arquitectura</strong>. Solo se ve revisando el código y preguntando: "¿qué pasa cuando alguien hace X?".</p>
+</section>
+
+<section class="slide">
+<h2>V3 · Detección y fix</h2>
+<div class="row">
+  <div>
+    <h3>Cómo detectarla</h3>
+    <p>Lista las acciones críticas del sistema (login, cambio de rol, borrado, pago, …). Por cada una pregúntate:</p>
+    <ul style="margin-top:1vh;">
+      <li>¿Se está registrando?</li>
+      <li>¿Con timestamp?</li>
+      <li>¿Con el actor (quién)?</li>
+      <li>¿Con el target (sobre qué)?</li>
+    </ul>
+    <p style="margin-top:1vh;">Si una respuesta es "no", tienes Repudiation.</p>
+    <p style="margin-top:1vh;"><strong>Test</strong>: <code>SELECT * FROM audit</code> después de hacer login → debería tener filas.</p>
+  </div>
+  <div>
+    <h3>El fix — helper + llamadas</h3>
+    <pre class="code good"><span class="com">// nuevo: middlewares/audit.js</span>
+<span class="kw">function</span> logAction(actor, action, target) {
+  getDb().prepare(
+<span class="good-line">    <span class="str">'INSERT INTO audit (actor, action, target, timestamp) VALUES (?,?,?,?)'</span></span>
+  ).run(actor, action, target, <span class="kw">new</span> Date().toISOString());
+}
+
+<span class="com">// authController.js — usar el helper</span>
+<span class="good-line">logAction(user.username, <span class="str">'login:success'</span>, `user:${user.id}`);</span>
+<span class="good-line">logAction(username, <span class="str">'login:failed'</span>, err.code);</span>
+
+<span class="com">// adminController.js</span>
+<span class="good-line">logAction(req.session.user.username, <span class="str">'promote:role'</span>, `user:${id}`);</span></pre>
+  </div>
+</div>
+</section>
+
+<!-- =================== V4 — Path traversal =================== -->
+<section class="slide">
+<div class="vuln-header">
+  <div class="vuln-letter">I</div>
+  <div class="vuln-title">
+    <h2>V4 · Path traversal + stack traces</h2>
+    <div class="meta"><span class="tag stride">Information Disclosure</span> <span class="tag nist">SI-10</span> <span class="tag nist">SI-11</span> <span class="tag tool">ZAP / manual</span></div>
+  </div>
+</div>
+<h3>El código vulnerable — <code>controllers/fileController.js</code></h3>
+<pre class="code bad"><span class="kw">function</span> download(req, res) {
+  <span class="kw">const</span> name = req.query.name || <span class="str">''</span>;
+<span class="bad-line">  <span class="kw">const</span> filePath = path.join(UPLOAD_DIR, name);  <span class="com">// ¡name no validado!</span></span>
+  res.sendFile(filePath);
+}
+
+<span class="com">// app.js — error handler que filtra el stack</span>
+app.use((err, req, res, next) => {
+<span class="bad-line">  res.status(500).send(`ERROR: ${err.message}\n\nSTACK:\n${err.stack}`);</span>
+});</pre>
+<p style="margin-top:1.5vh;"><strong>El bug</strong>: <code>path.join</code> resuelve <code>..</code> sin validar. <code>name=../package.json</code> sale del directorio <code>uploads/</code> y entrega cualquier archivo del repo.</p>
+<p><em>Por qué es Information Disclosure</em>: el atacante <strong>lee información que no debería</strong> (configs, secretos, código fuente, en producción <code>/etc/passwd</code>).</p>
+</section>
+
+<section class="slide">
+<h2>V4 · Detección y fix</h2>
+<div class="row">
+  <div>
+    <h3>Cómo detectarla</h3>
+    <pre class="code"><span class="com"># Path traversal:</span>
+curl <span class="str">'http://localhost:3000/files/download?name=../package.json'</span>
+<span class="com"># Devuelve el package.json del repo. Confirmado.</span>
+
+<span class="com"># Stack trace expuesto:</span>
+curl <span class="str">'http://localhost:3000/anything-that-throws'</span>
+<span class="com"># Respuesta incluye "at function (file:line)"</span></pre>
+    <p style="margin-top:1vh;"><strong>ZAP</strong> baseline detecta ambos como Information Disclosure.</p>
+  </div>
+  <div>
+    <h3>El fix</h3>
+    <pre class="code good"><span class="kw">function</span> download(req, res) {
+  <span class="kw">const</span> name = req.query.name || <span class="str">''</span>;
+<span class="good-line">  <span class="kw">if</span> (name !== path.basename(name)) {</span>
+<span class="good-line">    <span class="kw">return</span> res.status(<span class="str">400</span>).send(<span class="str">'Nombre inválido'</span>);</span>
+  }
+  <span class="kw">const</span> filePath = path.resolve(UPLOAD_DIR, name);
+<span class="good-line">  <span class="kw">if</span> (!filePath.startsWith(path.resolve(UPLOAD_DIR) + path.sep)) {</span>
+<span class="good-line">    <span class="kw">return</span> res.status(<span class="str">400</span>).send(<span class="str">'Ruta inválida'</span>);</span>
+  }
+  res.sendFile(filePath);
+}
+
+<span class="com">// app.js — error handler genérico</span>
+<span class="good-line">app.use((err, req, res) => res.status(<span class="str">500</span>).send(<span class="str">'Internal server error'</span>));</span></pre>
+    <p style="margin-top:1vh;"><strong>Doble cinturón</strong>: validar que sea basename + verificar el resolve final.</p>
+  </div>
+</div>
+</section>
+
+<!-- =================== V5 — DoS =================== -->
+<section class="slide">
+<div class="vuln-header">
+  <div class="vuln-letter">D</div>
+  <div class="vuln-title">
+    <h2>V5 · ReDoS + upload sin límite</h2>
+    <div class="meta"><span class="tag stride">Denial of Service</span> <span class="tag nist">SC-5</span> <span class="tag tool">manual / Semgrep regex</span></div>
+  </div>
+</div>
+<h3>El código vulnerable — dos partes</h3>
+<pre class="code bad"><span class="com">// utils/validators.js — regex catastrófica</span>
+<span class="bad-line"><span class="kw">const</span> EMAIL_REGEX = /^([a-zA-Z0-9]+)+@([a-zA-Z0-9]+)+\.([a-zA-Z]{2,})+$/;</span>
+<span class="com">// Los grupos anidados con + causan backtracking exponencial.</span>
+<span class="com">// Input: 'a'.repeat(15000) + '!' bloquea el event loop por minutos.</span>
+
+<span class="com">// services/uploadService.js — sin límite de tamaño</span>
+<span class="bad-line"><span class="kw">const</span> uploader = multer({ storage });  <span class="com">// sin `limits`</span></span></pre>
+<p style="margin-top:1.5vh;"><strong>El bug 1 (ReDoS)</strong>: la regex tiene <code>(...)+(...)+</code> anidado. Para un input que casi-pero-no-cumple el patrón, el motor regex prueba todas las combinaciones posibles. Para 30 chars: instantáneo. Para 30 mil: minutos.</p>
+<p><strong>El bug 2 (upload)</strong>: subir un archivo de 5GB satura disco y memoria del servidor.</p>
+<p><em>Por qué es Denial of Service</em>: <strong>tumba el servicio</strong> sin necesidad de credenciales ni privilegios.</p>
+</section>
+
+<section class="slide">
+<h2>V5 · Detección y fix</h2>
+<div class="row">
+  <div>
+    <h3>Cómo detectarla</h3>
+    <pre class="code"><span class="com"># ReDoS: tiempo de respuesta del validador</span>
+node -e <span class="str">"
+const v = require('./src/utils/validators');
+const start = Date.now();
+v.isValidEmail('a'.repeat(15000) + '!');
+console.log(Date.now() - start, 'ms');
+"</span>
+<span class="com"># Si tarda &gt;500ms para 15k chars: ReDoS</span>
+
+<span class="com"># Upload: subir archivo grande</span>
+curl -F <span class="str">"file=@5gb.bin"</span> ...
+<span class="com"># Si lo acepta sin error: bug</span></pre>
+  </div>
+  <div>
+    <h3>El fix</h3>
+    <pre class="code good"><span class="com">// regex lineal (sin grupos anidados con +)</span>
+<span class="good-line"><span class="kw">const</span> EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;</span>
+
+<span class="kw">function</span> isValidEmail(email) {
+<span class="good-line">  <span class="kw">if</span> (email.length &gt; <span class="str">254</span>) <span class="kw">return</span> <span class="kw">false</span>;</span>
+  <span class="kw">return</span> EMAIL_REGEX.test(email);
+}
+
+<span class="com">// multer con límite explícito</span>
+<span class="kw">const</span> uploader = multer({
+  storage,
+<span class="good-line">  limits: { fileSize: <span class="str">2</span> * <span class="str">1024</span> * <span class="str">1024</span> }  <span class="com">// 2 MB</span></span>
+});</pre>
+    <p style="margin-top:1vh;"><strong>Regla mental</strong>: cualquier recurso (CPU, memoria, disco, red) que dependa de input del usuario necesita <em>un tope</em>.</p>
+  </div>
+</div>
+</section>
+
+<!-- =================== V6 — Elevation =================== -->
+<section class="slide">
+<div class="vuln-header">
+  <div class="vuln-letter">E</div>
+  <div class="vuln-title">
+    <h2>V6 · Endpoints admin sin RBAC</h2>
+    <div class="meta"><span class="tag stride">Elevation of Privilege</span> <span class="tag nist">AC-3</span> <span class="tag nist">AC-6</span> <span class="tag tool">manual</span></div>
+  </div>
+</div>
+<h3>El código vulnerable — <code>routes/admin.js</code></h3>
+<pre class="code bad"><span class="kw">const</span> express = require(<span class="str">'express'</span>);
+<span class="kw">const</span> ctrl = require(<span class="str">'../controllers/adminController'</span>);
+<span class="com">// const { requireAdmin } = require('../middlewares/rbac');  ← ¡no se importa!</span>
+
+<span class="kw">const</span> router = express.Router();
+
+<span class="bad-line">router.get(<span class="str">'/users'</span>, ctrl.listUsers);                  <span class="com">// sin guard</span></span>
+<span class="bad-line">router.post(<span class="str">'/users/:id/promote'</span>, ctrl.promoteUser);  <span class="com">// sin guard</span></span></pre>
+<p style="margin-top:1.5vh;"><strong>El bug</strong>: el menú "Admin" en el frontend está oculto para usuarios normales — <em>pero el endpoint no valida nada</em>. Cualquiera con cookie de sesión puede hacer <code>curl /admin/users</code> y entrar.</p>
+<p><em>Por qué es Elevation of Privilege</em>: un usuario normal <strong>obtiene capacidades de admin</strong>. El más clásico de los bugs de autorización.</p>
+<p style="margin-top:1vh;"><strong>Anti-patrón</strong>: confiar en que el frontend filtre. <em>El frontend nunca es la frontera de seguridad.</em></p>
+</section>
+
+<section class="slide">
+<h2>V6 · Detección y fix</h2>
+<div class="row">
+  <div>
+    <h3>Cómo detectarla</h3>
+    <pre class="code"><span class="com"># Login como usuario normal (no admin)</span>
+curl -c c.txt -d <span class="str">"username=neo&amp;password=matrix"</span> \
+  http://localhost:3000/auth/login
+
+<span class="com"># Probar endpoint de admin con cookie de user normal</span>
+curl -b c.txt http://localhost:3000/admin/users
+<span class="com"># Si responde 200 con la lista: bug confirmado.</span>
+<span class="com"># Si responde 403: el guard funciona.</span></pre>
+    <p style="margin-top:1vh;">Para cada endpoint sensible, hazte la pregunta: <em>¿qué pasa si lo llama alguien sin permiso?</em></p>
+  </div>
+  <div>
+    <h3>El fix — middleware en el router</h3>
+    <pre class="code good"><span class="kw">const</span> express = require(<span class="str">'express'</span>);
+<span class="kw">const</span> ctrl = require(<span class="str">'../controllers/adminController'</span>);
+<span class="good-line"><span class="kw">const</span> { requireAdmin } = require(<span class="str">'../middlewares/rbac'</span>);</span>
+
+<span class="kw">const</span> router = express.Router();
+<span class="good-line">router.use(requireAdmin);  <span class="com">// aplica a TODAS las rutas del router</span></span>
+
+router.get(<span class="str">'/users'</span>, ctrl.listUsers);
+router.post(<span class="str">'/users/:id/promote'</span>, ctrl.promoteUser);</pre>
+    <p style="margin-top:1vh;"><strong>Patrón</strong>: aplica el guard en el <em>router</em>, no en cada handler. Imposible olvidarlo en una nueva ruta.</p>
+  </div>
+</div>
+</section>
+
+<!-- =================== Cierre =================== -->
+<section class="slide">
+<h2>Patrones que se repiten</h2>
+<div class="grid-2">
+  <div>
+    <h3>Cuando hay datos del usuario...</h3>
+    <ul>
+      <li>Que llegan a la <strong>BD</strong> → <em>placeholders</em>, nunca concatenes (V2)</li>
+      <li>Que llegan al <strong>HTML</strong> → <em>escapar</em> (V0)</li>
+      <li>Que llegan al <strong>filesystem</strong> → <em>validar basename</em> (V4)</li>
+      <li>Que controlan <strong>recursos</strong> (CPU/disco) → <em>poner topes</em> (V5)</li>
+    </ul>
+  </div>
+  <div>
+    <h3>Cuando hay autenticación / autorización...</h3>
+    <ul>
+      <li>Mensajes de error <strong>genéricos</strong> (V1)</li>
+      <li>Cookies con <code>HttpOnly</code> + <code>SameSite</code> (V1)</li>
+      <li>Rate limit en endpoints sensibles (V1)</li>
+      <li>RBAC en el <strong>backend</strong>, no en el frontend (V6)</li>
+      <li><strong>Auditar</strong> toda acción crítica (V3)</li>
+    </ul>
+  </div>
+</div>
+<p class="quote" style="margin-top:2vh;">Los bugs cambian. Los patrones no. Una vez que ves uno, lo ves en cualquier proyecto.</p>
+</section>
+
+<section class="slide">
+<h2>Cómo aplicar esto a tu próximo proyecto</h2>
+<div class="grid-3">
+  <div class="step-box">
+    <h3><span class="num">1</span>Mapea los datos</h3>
+    <p>Para cada endpoint: ¿de dónde viene cada parámetro? ¿a dónde llega?</p>
+  </div>
+  <div class="step-box">
+    <h3><span class="num">2</span>Identifica límites de confianza</h3>
+    <p>Cada vez que datos del usuario tocan BD / FS / HTML / shell / OS = límite.</p>
+  </div>
+  <div class="step-box">
+    <h3><span class="num">3</span>Aplica STRIDE en cada límite</h3>
+    <p>S T R I D E = 6 preguntas. La que aplique = ahí está la vuln.</p>
+  </div>
+  <div class="step-box">
+    <h3><span class="num">4</span>Elige el control NIST</h3>
+    <p>Por cada letra que aplique, busca 1-2 controles SI/AC/AU/SC/IA.</p>
+  </div>
+  <div class="step-box">
+    <h3><span class="num">5</span>Implementa el fix</h3>
+    <p>Mínimo viable que cierra el agujero sin romper la funcionalidad legítima.</p>
+  </div>
+  <div class="step-box">
+    <h3><span class="num">6</span>Escribe el test</h3>
+    <p>El test es la prueba de que no vuelve. Sin test, mañana regresa.</p>
+  </div>
+</div>
+<p class="quote" style="margin-top:2vh;">No memorices vulnerabilidades. Memoriza el proceso. Las vulns nuevas las identificas con el mismo loop.</p>
+</section>
+
+<section class="slide center">
+<h1>Preguntas</h1>
+<p style="font-size:1.5vw; margin-top:2vh;">Las 7 vulns están vivas en el repo.<br>Pruébalas, escanéalas, arréglalas.</p>
+<p style="margin-top:3vh; color:var(--muted);">El test es la spec. El fix lo escribes tú.</p>
+</section>
+
+</div>
+
+<div class="footer-nav">
+  <span class="hint"><kbd>←</kbd> <kbd>→</kbd> navegar · <kbd>F</kbd> fullscreen · <kbd>Home</kbd>/<kbd>End</kbd></span>
+  <span id="counter" class="hint"></span>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+
+  function show(i) {
+    current = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === current));
+    counter.textContent = `${current + 1} / ${slides.length}`;
+    progress.style.width = ((current + 1) / slides.length * 100) + '%';
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault(); show(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault(); show(current - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault(); show(0);
+    } else if (e.key === 'End') {
+      e.preventDefault(); show(slides.length - 1);
+    } else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.footer-nav')) return;
+    const rect = document.body.getBoundingClientRect();
+    if (e.clientX > rect.width / 2) show(current + 1);
+    else show(current - 1);
+  });
+
+  show(0);
+</script>
+</body>
+</html>
