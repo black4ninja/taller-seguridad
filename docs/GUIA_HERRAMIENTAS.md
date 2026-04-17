@@ -14,13 +14,16 @@ Corre un escaneo **con la app corriendo**. Es el equivalente más directo a MobS
 # En una terminal, arranca la app:
 npm start
 
-# En otra terminal:
+# En otra terminal (Win/Mac/Linux):
 npm run scan:zap
-# internamente corre:
-# docker run --rm -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:3000
 ```
 
-En Linux puede ser necesario `--network=host` y `http://localhost:3000`.
+`npm run scan:zap` y `npm run scan:semgrep` son wrappers Node (`scripts/scan-*.js`)
+que funcionan idéntico en Windows (cmd/PowerShell), macOS y Linux. El reporte
+HTML queda en `reports/zap/zap-report.html`.
+
+En Linux puede ser necesario agregar `--network=host` al script si
+`host.docker.internal` no resuelve.
 
 ### Qué debe detectar
 
